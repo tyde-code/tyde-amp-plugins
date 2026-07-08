@@ -1,6 +1,6 @@
-# Tyde Amp Plugins
+# Amp Plugins
 
-Local Amp plugins maintained for the Tyde workspace.
+Local Amp plugins maintained for the workspace.
 
 This repo is structured so plugins live at the same relative path Amp expects inside a workspace:
 
