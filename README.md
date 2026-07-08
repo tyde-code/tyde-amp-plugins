@@ -55,11 +55,15 @@ The OpenAI subscription quota plugin checks ChatGPT/Codex subscription quota fro
 
 #### What it does
 
+This plugin gives you an early low-quota warning so you can take manual action before running out — for example, switching Amp off your OpenAI BYOK subscription so the last of your ChatGPT/Codex quota isn't spent unattended.
+
+Note: the plugin only *warns*. It does not deactivate BYOK or change any Amp setting for you; reacting to the warning is a manual step.
+
 - Reads Codex/ChatGPT auth data from `~/.codex/auth.json`.
 - Calls `https://chatgpt.com/backend-api/wham/usage` to fetch quota usage, with a 10 second timeout.
 - Shows primary and secondary quota windows, remaining percentage, and reset timing.
 - Shows a sanitized quota source label instead of the full local auth file path.
-- Warns on Amp thread/session start when remaining quota is at or below the configured threshold.
+- Warns on Amp thread/session start when remaining quota is at or below the configured threshold, so you have time to react (e.g. disable BYOK) before it's exhausted.
 - Falls back to a tiny OpenAI provider probe when the Codex quota endpoint cannot be read.
 
 #### Commands
