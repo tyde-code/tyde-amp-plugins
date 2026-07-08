@@ -114,6 +114,14 @@ Use the openai_subscription_quota tool with reasoningEffort medium.
 
 #### Configuration
 
+The plugin has no separate config file. Core configuration is edited directly in the plugin source at:
+
+```text
+.amp/plugins/openai-subscription-quota.ts
+```
+
+The only value stored through Amp global config is the low-quota warning threshold set by the command palette command.
+
 Amp global config key:
 
 ```text
