@@ -15,6 +15,8 @@ tyde-amp-plugins/
 
 That makes installation a copy operation from this repo into another Amp workspace.
 
+Note: this plugin has only been tested in a Windows environment so far. It is intended to be environment-generic where Amp plugins and Codex auth are available.
+
 ## Manual installation
 
 Copy the plugin files you want from this repo:
@@ -29,7 +31,7 @@ to the target workspace:
 <your-workspace>\.amp\plugins\
 ```
 
-For example, to install the OpenAI subscription quota plugin into the Tyde workspace, copy:
+For example, to install the OpenAI subscription quota plugin into another workspace, copy:
 
 ```text
 tyde-amp-plugins\.amp\plugins\openai-subscription-quota.ts
@@ -38,7 +40,7 @@ tyde-amp-plugins\.amp\plugins\openai-subscription-quota.ts
 to:
 
 ```text
-c:\share\tyde\.amp\plugins\openai-subscription-quota.ts
+<your-workspace>\.amp\plugins\openai-subscription-quota.ts
 ```
 
 If the target workspace does not have an `.amp\plugins` folder yet, create it first. Restart Amp or reload the workspace after copying plugin files so Amp loads them.
