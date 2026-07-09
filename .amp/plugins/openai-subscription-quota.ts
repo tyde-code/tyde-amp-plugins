@@ -7,6 +7,9 @@ const PROBE_MODEL: PluginAIModel = 'openai/gpt-5.5'
 const REASONING_EFFORTS = ['none', 'low', 'medium', 'high', 'xhigh'] as const
 const DEFAULT_REASONING_EFFORT: ReasoningEffort = 'medium'
 const MODEL_PROVIDER_SETTINGS_PATH = '/settings/model-providers'
+// SECURITY: keep the auth path and usage URL as source-level constants. Never expose them
+// as tool/command inputs — a prompt-injected agent could otherwise read arbitrary local
+// files or send the Codex access token to an attacker-chosen endpoint.
 const DEFAULT_CODEX_AUTH_PATH = join(homedir(), '.codex', 'auth.json')
 const CODEX_USAGE_URL = 'https://chatgpt.com/backend-api/wham/usage'
 const CODEX_USAGE_TIMEOUT_MS = 10000
@@ -444,7 +447,7 @@ function formatFallbackReport(usage: Extract<CodexUsageResult, { status: 'failed
 	]
 
 	if (result.status === 'reachable') {
-		lines.push(`Probe reply: ${result.reply || '(empty)'}`)
+		lines.push(`Probe reply: ${result.reply ? sanitizeRemoteText(result.reply) : '(empty)'}`)
 	} else {
 		lines.push(`Probe error: ${result.error}`)
 	}
