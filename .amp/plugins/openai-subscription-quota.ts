@@ -510,7 +510,10 @@ function formatDuration(totalSeconds: number) {
 const MAX_REMOTE_VALUE_LENGTH = 100
 
 function sanitizeRemoteText(text: string) {
-	const cleaned = text.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim()
+	const cleaned = text
+		.replace(/[\u0000-\u001f\u007f]+/g, ' ')
+		.replace(/[\u200b-\u200d\ufeff\u202a-\u202e]+/g, '')
+		.trim()
 	return cleaned.length > MAX_REMOTE_VALUE_LENGTH ? `${cleaned.slice(0, MAX_REMOTE_VALUE_LENGTH)}…` : cleaned
 }
 
