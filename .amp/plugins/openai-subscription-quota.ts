@@ -317,25 +317,26 @@ async function readCodexUsage(authJsonPath: string): Promise<CodexUsageResult> {
 	try {
 		const controller = new AbortController()
 		const timeout = setTimeout(() => controller.abort(), CODEX_USAGE_TIMEOUT_MS)
-		let response: Response
 
 		try {
-			response = await fetch(CODEX_USAGE_URL, {
+			const response = await fetch(CODEX_USAGE_URL, {
 				signal: controller.signal,
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 					'ChatGPT-Account-Id': accountID,
 				},
 			})
+
+			if (!response.ok) {
+				// statusText is remote-controlled reason text; don't echo it.
+				return { status: 'failed', error: `Codex usage request failed (HTTP ${response.status})` }
+			}
+
+			// Keep the abort timer active here: response.json() streams the body and can stall too.
+			return { status: 'ok', usage: await response.json() as CodexUsage }
 		} finally {
 			clearTimeout(timeout)
 		}
-
-		if (!response.ok) {
-			return { status: 'failed', error: `Codex usage request failed (${response.status} ${response.statusText})` }
-		}
-
-		return { status: 'ok', usage: await response.json() as CodexUsage }
 	} catch (error) {
 		if (error instanceof Error && error.name === 'AbortError') {
 			return { status: 'failed', error: `Codex usage request timed out after ${CODEX_USAGE_TIMEOUT_MS / 1000}s` }
@@ -439,7 +440,7 @@ function formatAuthSource(authJsonPath: string) {
 function formatFallbackReport(usage: Extract<CodexUsageResult, { status: 'failed' }>, result: ProbeResult, ampURL?: URL) {
 	const lines = [
 		'Codex quota source: failed',
-		`Codex quota error: ${usage.error}`,
+		`Codex quota error: ${sanitizeRemoteText(usage.error)}`,
 		'',
 		`Provider probe model: ${result.model}`,
 		`Provider probe reasoning effort: ${result.reasoningEffort}`,
@@ -449,7 +450,7 @@ function formatFallbackReport(usage: Extract<CodexUsageResult, { status: 'failed
 	if (result.status === 'reachable') {
 		lines.push(`Probe reply: ${result.reply ? sanitizeRemoteText(result.reply) : '(empty)'}`)
 	} else {
-		lines.push(`Probe error: ${result.error}`)
+		lines.push(`Probe error: ${sanitizeRemoteText(result.error)}`)
 	}
 
 	lines.push(
