@@ -66,6 +66,8 @@ Note: the plugin only *warns*. It does not deactivate BYOK or change any Amp set
 - Warns on Amp thread/session start when remaining quota is at or below the configured threshold, so you have time to react (e.g. disable BYOK) before it's exhausted.
 - Falls back to a tiny OpenAI provider probe when the Codex quota endpoint cannot be read.
 
+Privacy note: installing this plugin means your Codex access token is read from `~/.codex/auth.json` and used in a background request to `chatgpt.com` on every Amp session start (and on manual/tool checks). The token is only ever sent to that hardcoded endpoint and never appears in reports, logs, or thread content.
+
 #### Commands
 
 ##### `OpenAI: Check subscription quota`
@@ -109,6 +111,8 @@ Inputs:
 | `reasoningEffort` | No | `medium` | Reasoning effort for the fallback provider probe. One of `none`, `low`, `medium`, `high`, `xhigh`. |
 
 For least privilege, the agent tool does not accept a custom auth file path. It always reads `DEFAULT_CODEX_AUTH_PATH` from the plugin source.
+
+Because tool output enters the agent thread (which may sync to ampcode.com), the tool report redacts the credits `balance` value. The full value is still shown in the command palette dialog, which stays local.
 
 Example prompt:
 

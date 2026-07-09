@@ -133,7 +133,7 @@ export default function (amp: PluginAPI) {
 			const usage = await readCodexUsage(DEFAULT_CODEX_AUTH_PATH)
 
 			if (usage.status === 'ok') {
-				return formatCodexUsageReport(usage, DEFAULT_CODEX_AUTH_PATH)
+				return formatCodexUsageReport(usage, DEFAULT_CODEX_AUTH_PATH, undefined, { redactBilling: true })
 			}
 
 			const result = await probeOpenAIProvider(
@@ -373,7 +373,12 @@ function parseReasoningEffort(value: unknown): ReasoningEffort {
 		: DEFAULT_REASONING_EFFORT
 }
 
-function formatCodexUsageReport(result: Extract<CodexUsageResult, { status: 'ok' }>, authJsonPath: string, ampURL?: URL) {
+function formatCodexUsageReport(
+	result: Extract<CodexUsageResult, { status: 'ok' }>,
+	authJsonPath: string,
+	ampURL?: URL,
+	options?: { redactBilling?: boolean },
+) {
 	const usage = result.usage
 	const lines = [
 		`Quota source: ${formatAuthSource(authJsonPath)}`,
@@ -395,7 +400,8 @@ function formatCodexUsageReport(result: Extract<CodexUsageResult, { status: 'ok'
 			`  has_credits: ${formatValue(usage.credits.has_credits)}`,
 			`  unlimited: ${formatValue(usage.credits.unlimited)}`,
 			`  overage_limit_reached: ${formatValue(usage.credits.overage_limit_reached)}`,
-			`  balance: ${formatValue(usage.credits.balance)}`,
+			// Tool output enters the agent thread, which may sync to ampcode.com; keep the billing balance local-only.
+			`  balance: ${options?.redactBilling ? '(redacted in tool output)' : formatValue(usage.credits.balance)}`,
 		)
 	}
 
