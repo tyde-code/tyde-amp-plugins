@@ -1,3 +1,5 @@
+// @openai-subscription-quota from https://raw.githubusercontent.com/tyde-code/tyde-amp-plugins/main/.amp/plugins/openai-subscription-quota.ts
+
 import type { PluginAPI, PluginAIModel, PluginUI } from '@ampcode/plugin'
 import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
