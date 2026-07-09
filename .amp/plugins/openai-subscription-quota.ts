@@ -291,19 +291,27 @@ async function showLowQuotaWarning(ui: PluginUI, windows: LowQuotaWindow[], thre
 }
 
 async function readCodexUsage(authJsonPath: string): Promise<CodexUsageResult> {
+	let auth: CodexAuth
+
 	try {
-		const auth = JSON.parse(await readFile(authJsonPath, 'utf8')) as CodexAuth
-		const accessToken = auth.tokens?.access_token
-		const accountID = auth.tokens?.account_id
+		auth = JSON.parse(await readFile(authJsonPath, 'utf8')) as CodexAuth
+	} catch {
+		// Fixed message: raw readFile/JSON errors leak the local path (and username) into reports.
+		return { status: 'failed', error: 'Could not read or parse the Codex auth file' }
+	}
 
-		if (typeof accessToken !== 'string' || !accessToken) {
-			return { status: 'failed', error: 'No tokens.access_token found in Codex auth file' }
-		}
+	const accessToken = auth.tokens?.access_token
+	const accountID = auth.tokens?.account_id
 
-		if (typeof accountID !== 'string' || !accountID) {
-			return { status: 'failed', error: 'No tokens.account_id found in Codex auth file' }
-		}
+	if (typeof accessToken !== 'string' || !accessToken) {
+		return { status: 'failed', error: 'No tokens.access_token found in Codex auth file' }
+	}
 
+	if (typeof accountID !== 'string' || !accountID) {
+		return { status: 'failed', error: 'No tokens.account_id found in Codex auth file' }
+	}
+
+	try {
 		const controller = new AbortController()
 		const timeout = setTimeout(() => controller.abort(), CODEX_USAGE_TIMEOUT_MS)
 		let response: Response
@@ -486,8 +494,18 @@ function formatDuration(totalSeconds: number) {
 	return `${minutes}m`
 }
 
+// The usage response comes from a remote endpoint and its string fields end up in
+// tool output (agent context). Strip control characters and clamp length so a
+// compromised or intercepted response cannot inject multi-line instructions.
+const MAX_REMOTE_VALUE_LENGTH = 100
+
+function sanitizeRemoteText(text: string) {
+	const cleaned = text.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim()
+	return cleaned.length > MAX_REMOTE_VALUE_LENGTH ? `${cleaned.slice(0, MAX_REMOTE_VALUE_LENGTH)}…` : cleaned
+}
+
 function formatValue(value: unknown) {
-	return value === null || value === undefined || value === '' ? 'none' : String(value)
+	return value === null || value === undefined || value === '' ? 'none' : sanitizeRemoteText(String(value))
 }
 
 function toNumber(value: unknown) {
